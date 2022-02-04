@@ -7,9 +7,49 @@ def nothing(x):
     # any operation
     pass
 
-def bounding_box(p):
-    xbbox = int(p[0])
-    ybbox = int(p[0])
+def bounding_box(box):
+    x1 = int(box[0][0])
+    y1 = int(box[0][1])
+    x2 = int(box[1][0])
+    y2 = int(box[1][1])
+    x3 = int(box[2][0])
+    y3 = int(box[2][1])
+    x4 = int(box[3][0])
+    y4 = int(box[3][1])
+
+    width = x4-x1
+    height = y4-y3
+
+    width_factor = int(width)
+    height_factor = int(2*height)
+
+    x1b = int(box[0][0]) - width_factor
+    y1b = int(box[0][1]) 
+    x2b = int(box[1][0]) - width_factor
+    y2b = int(box[1][1]) - height_factor
+    x3b = int(box[2][0]) + width_factor
+    y3b = int(box[2][1]) - height_factor
+    x4b = int(box[3][0]) + width_factor
+    y4b = int(box[3][1])
+
+    start =[x1b,y1b]
+    end = [x3b,y3b]
+
+    #print("x1,y1")
+    #print(x1,y1)
+    #print("x2,y2")
+    #print(x2,y2)
+    #print("x3,y3")
+    #print(x3,y3)
+    #print("x4,y4")
+    #print(x4,y4)
+    if width > 10 and height > 10:
+     #print("start")
+     #print(start)
+     #print("end")
+     #print(end)
+
+     rect = cv2.rectangle(frame,start,end,(0,0,255),2)
 
 
 
@@ -20,9 +60,9 @@ font = cv2.FONT_HERSHEY_COMPLEX
 while True:
     _, frame = cap.read()
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    lower_blue = np.array([90,180,120])
-    upper_blue = np.array([120,255,255])
+ 
+    lower_blue = np.array([90,80,80])
+    upper_blue = np.array([120,255,200])
 
     #kernels
     kernel1 = np.ones((15,15), np.float32)/225
@@ -53,26 +93,31 @@ while True:
 
         #print(x,y)
 
-        if area > 250:
+        if area > 100 and area < 900:
             #cv2.drawContours(frame, [approx], 0, (0, 255, 0), 5)
 
             #if len(approx) == 3:
             #    cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
-            if len(approx) == 4 or len(approx) == 5:
+            if len(approx) < 12:
                 cv2.drawContours(frame, [approx], 0, (0, 255, 0),5)
-                print("Points Approx")
-                print(approx)
+                #print("Points Approx")
+                #print(approx)
                 #cv2.putText(frame, "CHAL RHA HAI BC", (x, y), font, 0.5, (0, 0, 0))
-                print("Approx ends")
+                #print("Approx ends")
                 rc = cv2.minAreaRect(cnt)
                 box = cv2.boxPoints(rc)
-                print("Box starts")
-                
+
                 for p in box:
                     pt = (int(p[0]),int(p[1]))
-                    print(pt)
-                    cv2.circle(frame,pt,2,(0,0,0),2)
-                print("Box Ends")
+                    #cv2.circle(frame,pt,2,(0,0,0),2)
+
+                #print("start")
+                #print(box)
+                #print("end")
+
+                bounding_box(box)
+            
+            #print(len(approx))
                 
 
 
