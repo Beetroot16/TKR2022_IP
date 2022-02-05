@@ -1,21 +1,67 @@
 import cv2
+from cv2 import WINDOW_AUTOSIZE
 import numpy as np
 import matplotlib.pyplot as plt
+#import serial
+import time
 
+x1 = 0
+x2 = 0
+x3 = 0
+x4 = 0
+y1 = 0
+y2 = 0
+y3 = 0
+y4 = 0
+
+coordinates = 0 
+frame = np.zeros((100,100,3), dtype=np.uint8)
+mida = 0
+midb = 0
+roi = np.zeros((100,100,3), dtype=np.uint8)
+
+#arduino = serial.Serial(port='COM6', baudrate=9600, timeout=.1) 
 
 def nothing(x):
     # any operation
     pass
 
 def bounding_box(box):
+    #global arduino  
+    global roi, frame
+    global x1
     x1 = int(box[0][0])
+    global y1
     y1 = int(box[0][1])
+    global x2
     x2 = int(box[1][0])
+    global y2
     y2 = int(box[1][1])
+    global x3 
     x3 = int(box[2][0])
+    global y3
     y3 = int(box[2][1])
+    global x4
     x4 = int(box[3][0])
+    global y4
     y4 = int(box[3][1])
+    midx2 = (x1 + x3) / 2
+    midx1 = (x2 + x4) / 2
+    midx = (midx1 + midx2) / 2
+    global mida
+    mida = int(midx)
+    midX = str(mida)
+    midy1 = (y2 + y4) / 2
+    midy2 = (y1 + y3) / 2
+    midy = (midy1 + midy2) / 2
+    global midb
+    midb = int(midy)
+    midY = str(midy)
+    #print(midX,",", midY , "\n")
+    global coordinates
+    coordinates = (mida,midb) 
+    #print(coordinates)
+
 
     width = x4-x1
     height = y4-y3
@@ -35,35 +81,48 @@ def bounding_box(box):
     start =[x1b,y1b]
     end = [x3b,y3b]
 
-    #print("x1,y1")
-    #print(x1,y1)
-    #print("x2,y2")
-    #print(x2,y2)
-    #print("x3,y3")
-    #print(x3,y3)
-    #print("x4,y4")
-    #print(x4,y4)
+    # print("x1,y1")
+    # print(x1,y1)
+    # print("x2,y2")
+    # print(x2,y2)
+    # print("x3,y3")
+    # print(x3,y3)
+    # print("x4,y4")
+    # print(x4,y4)
     if width > 10 and height > 10:
      #print("start")
      #print(start)
      #print("end")
      #print(end)
 
-     rect = cv2.rectangle(frame,start,end,(0,0,255),2)
+        rect = cv2.rectangle(frame,start,end,(0,0,255),2)
 
+    #arduino.write((midX+","+midY+"\n").encode())
+    #time.sleep(0.5)
+    #message = arduino.readline().rstrip().decode('utf-8')
+    #print(message)
 
+    # BOUNDING BOX ENDS
+    roi = frame[x1b:x3b, y3b:y1b]
+    #print("ROI Starts")
+    #print(roi)
 
-cap = cv2.VideoCapture(1)
+    print(x2b,y2b)
+
+cap = cv2.VideoCapture(0)
 
 font = cv2.FONT_HERSHEY_COMPLEX
     
 while True:
+
     _, frame = cap.read()
+
+    
+    # print(y1,y2,y3,y4)
+
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
  
-    lower_blue = np.array([90,120,100])
-
-
+    lower_blue = np.array([90,80,80])
     upper_blue = np.array([120,255,200])
 
     #kernels
@@ -95,13 +154,18 @@ while True:
 
         #print(x,y)
 
-        if area > 100 and area < 900:
+
+        if area > 300:
             #cv2.drawContours(frame, [approx], 0, (0, 255, 0), 5)
+
+            #print(mida,midb)
+
+            cv2.circle(frame,(mida,midb),5,(0,0,0),2)
 
             #if len(approx) == 3:
             #    cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
             if len(approx) < 12:
-                #cv2.drawContours(frame, [approx], 0, (0, 255, 0),5)
+                cv2.drawContours(frame, [approx], 0, (0, 255, 0),5)
                 #print("Points Approx")
                 #print(approx)
                 #cv2.putText(frame, "CHAL RHA HAI BC", (x, y), font, 0.5, (0, 0, 0))
@@ -129,14 +193,22 @@ while True:
 
             #print(len(approx))
         
+    # vidcroped = frame[x1:x4,y2:y1]
 
     #OPEN CV IMSHOW
 
     cv2.imshow("Frame", frame)
     #cv2.imshow("Mask", mask)
-    cv2.imshow("Canny", edges)
+    #cv2.imshow("Canny", edges)
     #cv2.imshow("res", res)
-    cv2.imshow("Opening",opening)
+    #cv2.imshow("Opening",opening)
+
+    cv2.namedWindow("cropped",WINDOW_AUTOSIZE)
+
+    if x1 == 0 and x4 == 0 and y2 == 0 and y1 == 0:
+        cv2.imshow("cropped",roi)
+    # else:
+    #     cv2.destroyWindow("cropped")
 
 
     key = cv2.waitKey(1)
