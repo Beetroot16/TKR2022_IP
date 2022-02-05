@@ -22,10 +22,6 @@ roi = np.zeros((100,100,3), dtype=np.uint8)
 
 #arduino = serial.Serial(port='COM6', baudrate=9600, timeout=.1) 
 
-def nothing(x):
-    # any operation
-    pass
-
 def bounding_box(box):
     #global arduino  
     global roi, frame
@@ -173,10 +169,6 @@ while True:
                 rc = cv2.minAreaRect(cnt)
                 box = cv2.boxPoints(rc)
 
-                for p in box:
-                    pt = (int(p[0]),int(p[1]))
-                    #cv2.circle(frame,pt,2,(0,0,0),2)
-
                 #print("start")
                 #print(box)
                 #print("end")
@@ -201,12 +193,12 @@ while True:
     #cv2.imshow("Mask", mask)
     #cv2.imshow("Canny", edges)
     #cv2.imshow("res", res)
-    #cv2.imshow("Opening",opening)
+    cv2.imshow("Opening",opening)
 
     cv2.namedWindow("cropped",WINDOW_AUTOSIZE)
 
-    if x1 == 0 and x4 == 0 and y2 == 0 and y1 == 0:
-        cv2.imshow("cropped",roi)
+    #if x1 == 0 and x4 == 0 and y2 == 0 and y1 == 0:
+        #cv2.imshow("cropped",roi)
     # else:
     #     cv2.destroyWindow("cropped")
 
