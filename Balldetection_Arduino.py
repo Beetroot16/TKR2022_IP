@@ -2,7 +2,7 @@ import cv2
 from cv2 import WINDOW_AUTOSIZE
 import numpy as np
 import matplotlib.pyplot as plt
-#import serial
+import serial
 import time
 
 x1 = 0
@@ -23,7 +23,7 @@ mida = 0
 midb = 0
 roi = np.zeros((100,100,3), dtype=np.uint8)
 
-#arduino = serial.Serial(port='COM6', baudrate=9600, timeout=.1) 
+arduino = serial.Serial(port='COM10', baudrate=9600, timeout=1) 
 
 def bounding_box(box):
     #global arduino  
@@ -102,10 +102,10 @@ def bounding_box(box):
         rect = cv2.rectangle(frame,start,end,(0,0,255),2)
         cv2.putText(frame, "Ball", (end), font, 0.5, (0, 0, 0))
 
-    #arduino.write((midX+","+midY+"\n").encode())
-    #time.sleep(0.5)
-    #message = arduino.readline().rstrip().decode('utf-8')
-    #print(message)
+    arduino.write((midX+","+midY+"\n").encode())
+    # time.sleep(0.5)
+    message = arduino.readline().rstrip().decode('utf-8')
+    print(message)
 
     # BOUNDING BOX ENDS
     roi = frame[x1b:x3b, y3b:y1b]

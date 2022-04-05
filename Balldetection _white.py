@@ -14,6 +14,12 @@ y2 = 0
 y3 = 0
 y4 = 0
 
+x1b = 0
+x3b = 0
+y1b = 0
+y3b = 0
+
+
 width_factor = 0
 height_factor = 0
 
@@ -21,7 +27,7 @@ coordinates = 0
 frame = np.zeros((100,100,3), dtype=np.uint8)
 mida = 0
 midb = 0
-roi = np.zeros((100,100,3), dtype=np.uint8)
+roi = np.zeros((720,1280,3), dtype=np.uint8)
 
 #arduino = serial.Serial(port='COM6', baudrate=9600, timeout=.1) 
 
@@ -71,7 +77,7 @@ def bounding_box(box):
     width_factor = int(width)
     height_factor = int(2*height)
 
-
+    global x1b , y1b , x3b , y3b
 
     x1b = int(box[0][0]) - width_factor
     y1b = int(box[0][1]) 
@@ -112,9 +118,11 @@ def bounding_box(box):
     #print("ROI Starts")
     #print(roi)
 
-    print(x2b,y2b)
+    #print(x2b,y2b)
 
 cap = cv2.VideoCapture(1)
+
+blank_image = np.zeros((720,1280,3), np.uint8)
 
 font = cv2.FONT_HERSHEY_COMPLEX
     
@@ -163,14 +171,14 @@ while True:
         if area > 300:
             #cv2.drawContours(frame, [approx], 0, (0, 255, 0), 5)
 
-            #print(mida,midb)
+            print(mida,midb)
 
-            cv2.circle(frame,(mida ,midb - int((height_factor)/2)),10,(0,0,0),2)
+            cv2.circle(frame,(mida ,midb - int((height_factor)/2)),1,(0,0,0),2)
 
             #if len(approx) == 3:
             #    cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
-            if len(approx) < 20:
-                cv2.drawContours(frame, [approx], 0, (0, 255, 0),5)
+            if len(approx) < 10:
+                #cv2.drawContours(frame, [approx], 0, (0, 255, 0),5)
                 #print("Points Approx")
                 #print(approx)
                 #cv2.putText(frame, "CHAL RHA HAI BC", (x, y), font, 0.5, (0, 0, 0))
@@ -196,6 +204,14 @@ while True:
         
     # vidcroped = frame[x1:x4,y2:y1]
 
+    #TRYING TO ADD BOX 
+    #blank_image_smol = cv2.resize(roi ,((x3b-x1b),(y3b-y1b)))
+    #box_new = cv2.add(roi,blank_image)
+
+    #IF ROI IS EMPTY 
+    # if roi == []:
+    #     roi = np.zeros((720,1280,3), dtype=np.uint8)
+
     #OPEN CV IMSHOW
 
     cv2.imshow("Frame", frame)
@@ -203,6 +219,10 @@ while True:
     #cv2.imshow("Canny", edges)
     #cv2.imshow("res", res)
     cv2.imshow("Opening",opening)
+    #cv2.imshow("test",blank_image)
+    #cv2.imshow("test2",box_new)
+    #cv2.imshow("Blank",roi)
+    
 
     #cv2.namedWindow("cropped",WINDOW_AUTOSIZE)
 
