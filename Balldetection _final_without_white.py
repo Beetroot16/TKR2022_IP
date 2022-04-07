@@ -2,7 +2,6 @@ import cv2
 from cv2 import WINDOW_AUTOSIZE
 import numpy as np
 import matplotlib.pyplot as plt
-#import serial
 import time
 
 x1 = 0
@@ -30,10 +29,7 @@ mida = 0
 midb = 0
 roi = np.zeros((720,1280,3), dtype=np.uint8)
 
-#arduino = serial.Serial(port='COM6', baudrate=9600, timeout=.1) 
-
 def bounding_box(box):
-    #global arduino  
     global roi, frame
     global x1
     x1 = int(box[0][0])
@@ -63,10 +59,8 @@ def bounding_box(box):
     global midb
     midb = int(midy)
     midY = str(midy)
-    #print(midX,",", midY , "\n")
     global coordinates
-    coordinates = (mida,midb) 
-    #print(coordinates)
+    coordinates = (mida,midb)
 
     global width,height
     width = x4-x1
@@ -78,7 +72,7 @@ def bounding_box(box):
     width_factor = int(width)
     height_factor = int(2*height)
 
-    global x1b , y1b , x3b , y3b
+    global x1b , y1b , x2b , y2b , x3b , y3b , x4b , y4b
 
     x1b = int(box[0][0]) - width_factor
     y1b = int(box[0][1]) 
@@ -89,39 +83,19 @@ def bounding_box(box):
     x4b = int(box[3][0]) + width_factor
     y4b = int(box[3][1])
 
-    start =[x1b,y1b]
-    end = [x3b,y3b]
+    print(x2,y2) 
 
-    # print("x1,y1")
-    # print(x1,y1)
-    # print("x2,y2")
-    # print(x2,y2)
-    # print("x3,y3")
-    # print(x3,y3)
-    # print("x4,y4")
-    # print(x4,y4)
-    if width > 10 and height > 10:
-     #print("start")
-     #print(start)
-     #print("end")
-     #print(end)
-        # print(mida,midb)
-        print(height,width)
+    start =[x2b,y2b]
+    end = [x4b,y4b]
+
+    if width > 3 and height > 3:
         rect = cv2.rectangle(frame,start,end,(0,0,255),2)
         cv2.putText(frame, "Ball", (end), font, 0.5, (0, 0, 0))
         cv2.circle(frame,(mida ,midb - int((height_factor)/2)),1,(0,0,0),2)
 
-    #arduino.write((midX+","+midY+"\n").encode())
-    #time.sleep(0.5)
-    #message = arduino.readline().rstrip().decode('utf-8')
-    #print(message)
-
     # BOUNDING BOX ENDS
-    roi = frame[x1b:x3b, y3b:y1b]
-    #print("ROI Starts")
-    #print(roi)
+    roi = frame[y2b:y4b, x2b:x4b]
 
-    #print(x2b,y2b)
 
 cap = cv2.VideoCapture(0)
 
@@ -132,16 +106,14 @@ font = cv2.FONT_HERSHEY_COMPLEX
 while True:
     _, frame = cap.read()
 
-    # print(y1,y2,y3,y4)
-
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
  
-    lower_blue = np.array([90,130,130])
+    lower_blue = np.array([90,100,100])
     upper_blue = np.array([120,355,355])
 
     #kernels
     kernel1 = np.ones((15,15), np.float32)/225
-    kernel2 = np.ones((5,5), np.uint8)
+    kernel2 = np.ones((10,10), np.uint8)
 
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
     #blur = cv2.GaussianBlur(frame, (15,15), 0)
@@ -169,7 +141,7 @@ while True:
         #print(x,y)
 
 
-        if area > 300:
+        if area > 100:
             #cv2.drawContours(frame, [approx], 0, (0, 255, 0), 5)
 
             # cv2.circle(frame,(mida ,midb - int((height_factor)/2)),1,(0,0,0),2)
@@ -178,44 +150,17 @@ while True:
             #    cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))
             if len(approx) < 30:
                 #cv2.drawContours(frame, [approx], 0, (0, 255, 0),5)
-                #print("Points Approx")
-                #print(approx)
-                #cv2.putText(frame, "CHAL RHA HAI BC", (x, y), font, 0.5, (0, 0, 0))
-                #print("Approx ends")
                 rc = cv2.minAreaRect(cnt)
                 box = cv2.boxPoints(rc)
 
-                #print("start")
-                #print(box)
-                #print("end")
                 bounding_box(box)
-            
-            #print(len(approx))
-                
-
-
-
-            #elif 10 < len(approx) < 20:
-            #    cv2.putText(frame, "Circle", (x, y), font, 1, (0, 0, 0))
-
-            #print(len(approx))
-        
-    # vidcroped = frame[x1:x4,y2:y1]
-
-    #TRYING TO ADD BOX 
-    #blank_image_smol = cv2.resize(roi ,((x3b-x1b),(y3b-y1b)))
-    #box_new = cv2.add(roi,blank_image)
-
-    #IF ROI IS EMPTY 
-    # if roi == []:
-    #     roi = np.zeros((720,1280,3), dtype=np.uint8)
 
     #OPEN CV IMSHOW
 
     cv2.imshow("Frame", frame)
-    cv2.imshow("hsv", hsv)
+    #cv2.imshow("hsv", hsv)
     #cv2.imshow("Canny", edges)
-    cv2.imshow("res", res)
+    #cv2.imshow("res", res)
     cv2.imshow("Opening",opening)
     #cv2.imshow("test",blank_image)
     #cv2.imshow("test2",box_new)
@@ -223,15 +168,6 @@ while True:
         cv2.imshow("Blank",roi)
     except:
         pass
-    
-
-    #cv2.namedWindow("cropped",WINDOW_AUTOSIZE)
-
-    #if x1 == 0 and x4 == 0 and y2 == 0 and y1 == 0:
-        #cv2.imshow("cropped",roi)
-    # else:
-    #     cv2.destroyWindow("cropped")
-
 
     key = cv2.waitKey(1)
     if key == 27:
