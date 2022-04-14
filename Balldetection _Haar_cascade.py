@@ -122,7 +122,7 @@ while True:
     upper_blue = np.array([120,355,355])
 
     #kernels
-    kernel1 = np.ones((15,15), np.float32)/2250y
+    kernel1 = np.ones((15,15), np.float32)/y1
     kernel2 = np.ones((10,10), np.uint8)
 
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
