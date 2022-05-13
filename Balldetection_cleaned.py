@@ -5,6 +5,10 @@ import numpy as np
 lower_blue = np.array([90,160,80])
 upper_blue = np.array([120,355,355])
 
+#white color value
+lower_white = np.array([0,355,0])
+upper_white = np.array([360,360,360])
+
 start = None
 end = None
 
@@ -24,13 +28,14 @@ y_coordinates_bbox = [0,0,0,0]
  
 # defining blank rois
 roi = np.zeros((720,1280,3),dtype= np.uint8)
+rgbaroi = np.zeros((720,1280,3),dtype= np.uint8)
 roi_gray = np.zeros((720,1280,3),dtype= np.uint8)
 
 # defining frame
 frame = np.zeros((100,100,3),dtype=np.uint8)
     
 def bounding_box(box):
-    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end
+    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi
     # x1
     x_coordinates_contour[0]= int(box[0][0])
     # x2
@@ -93,6 +98,7 @@ def bounding_box(box):
 
     # defining roi
     roi = frame[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
+    rgbaroi = rgba[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
 
 cap = cv2.VideoCapture(0)
 
@@ -100,6 +106,7 @@ while  True:
     _, frame = cap.read()
 
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+    rgba = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
     gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 
     # kernels
@@ -130,7 +137,7 @@ while  True:
 
     # detecting white ball
     ball_cascade  = cv2.CascadeClassifier("ball_cascade.xml")
-    ball = ball_cascade.detectMultiScale(roi,2,2)
+    ball = ball_cascade.detectMultiScale(rgbaroi,2,1)
 
     for (x,y,w,h) in ball:
         circle_centre_x = (x+w//2)
@@ -144,7 +151,7 @@ while  True:
 
     cv2.imshow("frame",frame)
     try:
-        cv2.imshow("roi",roi)
+        cv2.imshow("roi",rgbaroi)
     except:
         pass
 

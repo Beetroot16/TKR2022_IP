@@ -56,7 +56,6 @@ while(True):
     cv2.imshow('mask',mask)
     cv2.imshow('res',res)
     cv2.imshow('hsv',hsv)
-
     cv2.imshow('mouseRGB', frame)
 
 
