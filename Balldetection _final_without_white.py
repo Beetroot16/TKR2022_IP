@@ -97,7 +97,7 @@ def bounding_box(box):
     roi = frame[y2b:y4b, x2b:x4b]
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 
 blank_image = np.zeros((720,1280,3), np.uint8) 
 

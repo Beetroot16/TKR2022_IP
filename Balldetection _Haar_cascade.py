@@ -1,8 +1,10 @@
+import string
 import cv2
 from cv2 import WINDOW_AUTOSIZE
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import serial 
 
 x1 = 0
 x2 = 0
@@ -16,6 +18,9 @@ x1b = 0
 x3b = 0
 y1b = 0
 y3b = 0
+
+final_x = 0
+final_y = 0
 
 width = 0
 height = 0
@@ -92,8 +97,8 @@ def bounding_box(box):
 
     global start , end
 
-    start =[x2b,y2b]
-    end = [x4b,y4b]
+    start =(x2b,y2b)
+    end = (x4b,y4b)
 
     # if width > 3 and height > 3:
         # rect = cv2.rectangle(frame,start,end,(0,0,255),2)
@@ -106,7 +111,7 @@ def bounding_box(box):
     roigray = gray[y2b:y4b, x2b:x4b]
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 
 blank_image = np.zeros((720,1280,3), np.uint8) 
 
@@ -118,11 +123,11 @@ while True:
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
  
-    lower_blue = np.array([90,160,80])
+    lower_blue = np.array([90,100,60])
     upper_blue = np.array([120,355,355])
 
     #kernels
-    kernel1 = np.ones((15,15), np.float32)/2250y
+    kernel1 = np.ones((15,15), np.float32)/y1
     kernel2 = np.ones((10,10), np.uint8)
 
     mask = cv2.inRange(hsv, lower_blue, upper_blue)
@@ -178,26 +183,98 @@ while True:
         rect = cv2.rectangle(frame,start,end,(0,0,255),2)
         cv2.circle(roi,(circle_center_x,circle_center_y),1,(0,0,0),4)
         roi_color = roi[y:y+h, x:x+w]
-        print(circle_center_x,circle_center_y)
+        # print(circle_center_x+x2b,circle_center_y+y2b)
+        
+    
+        final_x = circle_center_x+x2b
+        final_y = circle_center_y+y2b
+        # print(str(final_x) + "," + str(final_y))
+        
+        # print(str(final_y))
+
+        # print(x2b,y2b)
+
+    ser = serial.Serial('COM3', 9600, timeout=1)
+    ser.reset_input_buffer()
+
 
     
+    while True:
+        
+        x_ind = ':;'
+        x_ind = x_ind.encode('utf-8')
+        ser.write(x_ind)
+            
+        x_cord = str(final_x)+ "\n"
+        x_cord = x_cord.encode('utf-8')
+        ser.write(x_cord)
+
+        line = ser.read_all().decode()
+        print(line)
+        time.sleep(1)
+
+        y_ind = '#;'
+        y_ind = y_ind.encode('utf-8')
+        ser.write(y_ind)
+        y_cord = str(final_y) + "\n"
+        y_cord = y_cord.encode('utf-8')
+        ser.write(y_cord)
+
+        line = ser.read_all().decode()
+        print(line)
+        time.sleep(0.5)
+
 
     #OPEN CV IMSHOW
 
-    cv2.imshow("Frame", frame)
-    #cv2.imshow("hsv", hsv)
-    #cv2.imshow("Canny", edges)
-    #cv2.imshow("res", res)
-    cv2.imshow("Opening",opening)
-    try:
-        # cv2.imshow("roi",roi)
-        cv2.imshow("roigray",roigray)
-    except:
-        pass
+        cv2.imshow("Frame", frame)
+        #cv2.imshow("hsv", hsv)
+        #cv2.imshow("Canny", edges)
+        #cv2.imshow("res", res)
+        cv2.imshow("Opening",opening)
+        try:
+            # cv2.imshow("roi",roi)
+            cv2.imshow("roigray",roigray)
+        except:
+            pass
 
-    key = cv2.waitKey(1)
-    if key == 27:
-        break
+        key = cv2.waitKey(1)
+        if key == 27:
+            break
+                                
+        cap.release()
+        cv2.destroyAllWindows()
 
-cap.release()
-cv2.destroyAllWindows()
+# sending values to aurdino
+# ser = serial.Serial('COM3', 9600, timeout=1)
+# ser.reset_input_buffer()
+
+
+    
+# while True:
+    
+#     x_ind = ':;'
+#     x_ind = x_ind.encode('utf-8')
+#     ser.write(x_ind)
+        
+#     x_cord = str(final_x)+ "\n"
+#     x_cord = x_cord.encode('utf-8')
+#     ser.write(x_cord)
+
+#     line = ser.read_all().decode()
+#     print(line)
+#     time.sleep(1)
+
+#     y_ind = '#;'
+#     y_ind = y_ind.encode('utf-8')
+#     ser.write(y_ind)
+#     y_cord = str(final_y) + "\n"
+#     y_cord = y_cord.encode('utf-8')
+#     ser.write(y_cord)
+
+#     line = ser.read_all().decode()
+#     print(line)
+#     time.sleep(1)
+
+    
+           
