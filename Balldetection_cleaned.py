@@ -13,7 +13,7 @@ start = None
 end = None
 
 # area threshold
-area_threshold = 100
+area_threshold = 50
 
 # length threshold
 length_threshold = 30
@@ -100,6 +100,18 @@ def bounding_box(box):
     roi = frame[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
     rgbaroi = rgba[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
 
+def haarcascade(roi,rgbaroi):
+    ball_cascade  = cv2.CascadeClassifier("ball_cascade.xml")
+    ball = ball_cascade.detectMultiScale(rgbaroi,2,1)
+
+    for (x,y,w,h) in ball:
+        circle_centre_x = (x+w//2)
+        circle_centre_y = (y+h//2)
+
+        cv2.circle(roi,(circle_centre_x,circle_centre_y),1,(0,0,0),4)
+
+        rect = cv2.rectangle(frame,start,end,(0,255,255),2)
+
 cap = cv2.VideoCapture(0)
 
 while  True:
@@ -136,17 +148,8 @@ while  True:
             bounding_box(box)
 
     # detecting white ball
-    ball_cascade  = cv2.CascadeClassifier("ball_cascade.xml")
-    ball = ball_cascade.detectMultiScale(rgbaroi,2,1)
 
-    for (x,y,w,h) in ball:
-        circle_centre_x = (x+w//2)
-        circle_centre_y = (y+h//2)
-
-        cv2.circle(roi,(circle_centre_x,circle_centre_y),1,(0,0,0),4)
-
-        rect = cv2.rectangle(frame,start,end,(0,255,255),2)
-
+    haarcascade(roi,rgbaroi)
 
 
     cv2.imshow("frame",frame)
@@ -160,16 +163,3 @@ while  True:
         break
 cap.release()
 cv2.destroyAllWindows()
-
-
-
-
-
-
-
-    
-    
-        
-
-
-
