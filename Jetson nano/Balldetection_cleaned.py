@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 
-
-# blue color value
+red = True
+yellow = False
+green = False
 
 #white color value
 lower_white = np.array([0,355,0])
@@ -28,10 +29,10 @@ start = None
 end = None
 
 # area threshold
-area_threshold = 0
+area_threshold = 20
 
 # length threshold
-length_threshold = 10
+length_threshold = 40
 
 # defining contour coordinates
 x_coordinates_contour = [0,0,0,0]
@@ -44,13 +45,14 @@ y_coordinates_bbox = [0,0,0,0]
 # defining blank rois
 roi = np.zeros((720,1280,3),dtype= np.uint8)
 rgbaroi = np.zeros((720,1280,3),dtype= np.uint8)
+roiedges = np.zeros((720,1280,3),dtype= np.uint8)
 roi_gray = np.zeros((720,1280,3),dtype= np.uint8)
 
 # defining frame
 frame = np.zeros((100,100,3),dtype=np.uint8)
     
 def bounding_box(box):
-    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi,x1roi,x2roi,y1roi,y2roi
+    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi,roiedges,x1roi,x2roi,y1roi,y2roi,red,yellow,green
     # x1
     x_coordinates_contour[0]= int(box[0][0])
     # x2
@@ -111,16 +113,22 @@ def bounding_box(box):
     start = ( x_coordinates_bbox[1] + x1roi,y_coordinates_bbox[1] + y1roi)
     end = (x_coordinates_bbox[3] + x1roi,y_coordinates_bbox[3] + y1roi)
 
-    rect = cv2.rectangle(frame,start,end,(0,0,255),2)
+    rect = cv2.rectangle(frame,start,end,(0,0,255),1)
 
     # defining roi
     roi = frame[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
+    roiedges = edgesframe[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
     rgbaroi = rgba[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
 
 def haarcascade(roi,rgbaroi):
+    global red,yellow,green
     ball_cascade  = cv2.CascadeClassifier("ball_cascade.xml")
     ball = ball_cascade.detectMultiScale(rgbaroi,2,1)
-
+    if ball != ():
+        red = False
+        yellow = False
+        green = True
+    
     for (x,y,w,h) in ball:
         circle_centre_x = (x+w//2)
         circle_centre_y = (y+h//2)
@@ -128,6 +136,17 @@ def haarcascade(roi,rgbaroi):
         cv2.circle(roi,(circle_centre_x,circle_centre_y),1,(0,0,0),4)
 
         rect = cv2.rectangle(frame,start,end,(0,255,255),2)
+
+def image_checker(width, height, rgb_color=(0, 0, 0)):
+    # Create black blank image
+    checkerimage = np.zeros((height, width, 3), np.uint8)
+
+    # Since OpenCV uses BGR, convert the color first
+    color = tuple(reversed(rgb_color))
+    # Fill image with color
+    checkerimage[:] = color
+
+    return checkerimage
 
 cap = cv2.VideoCapture(0)
 
@@ -162,31 +181,48 @@ while  True:
     
         opening = cv2.morphologyEx(res,cv2.MORPH_OPEN,kernel)
         edges = cv2.Canny(opening,150,100)
+        edgesframe = cv2.Canny(frame,50,150)
     
         # contourr detection
         if int(cv2.__version__[0])>3:
             contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         else :
             _,contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    
+
+        if contours == ():
+            red = True
+            yellow = False
+            green = False
+        else:
+            red = False
+            yellow = True
+            green = False
         for count in contours :
             area = cv2.contourArea(count)
             approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
-    
+
             if area>area_threshold and len(approx)<length_threshold:
                 rc = cv2.minAreaRect(count)
                 box = cv2.boxPoints(rc)
-    
                 bounding_box(box)
     
         # detecting white ball
 
         haarcascade(roi,rgbaroi)
-            
+
+        colors = [(255,0,0),(255,255,0),(0,255,0)]
+        if red == True:
+            checkerimg = image_checker(300,300,colors[0])
+        elif yellow == True:
+            checkerimg = image_checker(300,300,colors[1])
+        else:
+            checkerimg = image_checker(300,300,colors[2])
+        
         cv2.imshow("frame",roitrackbar)
         cv2.imshow("res",res)
+        cv2.imshow("Checker",checkerimg)
         try:
-            cv2.imshow("roi",roi)
+            cv2.imshow("roi",roiedges)
         except:
             pass
     
