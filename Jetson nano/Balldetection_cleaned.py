@@ -1,13 +1,28 @@
 import cv2
 import numpy as np
 
+
 # blue color value
-lower_blue = np.array([90,160,80])
-upper_blue = np.array([120,355,355])
 
 #white color value
 lower_white = np.array([0,355,0])
 upper_white = np.array([360,360,360])
+
+#for roi 
+def nothing(x):
+    pass
+
+img = np.zeros((300,400,3),dtype = np.uint8)
+cv2.namedWindow('image',cv2.WINDOW_AUTOSIZE)
+
+roimain = np.zeros((720,1280,3),dtype= np.uint8)
+
+cv2.createTrackbar('X1','image',0,1000,nothing)
+cv2.createTrackbar('X2','image',0,1000,nothing)
+cv2.createTrackbar('Y1','image',0,1000,nothing)
+cv2.createTrackbar('Y2','image',0,1000,nothing)
+cv2.createTrackbar('saturation','image',0,355,nothing)
+cv2.createTrackbar('value','image',0,355,nothing)
 
 start = None
 end = None
@@ -16,7 +31,7 @@ end = None
 area_threshold = 0
 
 # length threshold
-length_threshold = 30
+length_threshold = 10
 
 # defining contour coordinates
 x_coordinates_contour = [0,0,0,0]
@@ -35,7 +50,7 @@ roi_gray = np.zeros((720,1280,3),dtype= np.uint8)
 frame = np.zeros((100,100,3),dtype=np.uint8)
     
 def bounding_box(box):
-    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi
+    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi,x1roi,x2roi,y1roi,y2roi
     # x1
     x_coordinates_contour[0]= int(box[0][0])
     # x2
@@ -93,11 +108,13 @@ def bounding_box(box):
     # y4 bounding box
     y_coordinates_bbox[3] = int(y_coordinates_contour[3])
 
-    start = ( x_coordinates_bbox[1],y_coordinates_bbox[1])
-    end = (x_coordinates_bbox[3],y_coordinates_bbox[3])
+    start = ( x_coordinates_bbox[1] + x1roi,y_coordinates_bbox[1] + y1roi)
+    end = (x_coordinates_bbox[3] + x1roi,y_coordinates_bbox[3] + y1roi)
+
+    rect = cv2.rectangle(frame,start,end,(0,0,255),2)
 
     # defining roi
-    roi = frame[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
+    roi = frame[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
     rgbaroi = rgba[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
 
 def haarcascade(roi,rgbaroi):
@@ -117,46 +134,67 @@ cap = cv2.VideoCapture(0)
 while  True:
     _, frame = cap.read()
 
-    hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-    rgba = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    #getting trackbar
 
-    # kernels
-    kernel = np.ones((10,10),np.uint8)
+    x1roi = cv2.getTrackbarPos('X1','image')
+    x2roi = cv2.getTrackbarPos('X2','image')
+    y1roi = cv2.getTrackbarPos('Y1','image')
+    y2roi = cv2.getTrackbarPos('Y2','image')
+    sat_thres = cv2.getTrackbarPos('saturation','image')
+    val_thres = cv2.getTrackbarPos('value','image')
 
-    # image operations
-    mask = cv2.inRange(hsv,lower_blue,upper_blue)
-    res = cv2.bitwise_and(frame,frame,mask=mask)
+    lower_blue = np.array([90,sat_thres,val_thres])
+    upper_blue = np.array([120,355,355])
 
-    opening = cv2.morphologyEx(res,cv2.MORPH_OPEN,kernel)
-    edges = cv2.Canny(opening,150,100)
+    if x2roi>x1roi and y2roi>y1roi:
+        roitrackbar = frame[y1roi:y2roi,x1roi:x2roi]
 
-    # contourr detection
-    if int(cv2.__version__[0])>3:
-        contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    else :
-        _,contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        hsv = cv2.cvtColor(roitrackbar,cv2.COLOR_BGR2HSV)
+        rgba = cv2.cvtColor(roitrackbar, cv2.COLOR_BGR2RGBA)
+        gray = cv2.cvtColor(roitrackbar,cv2.COLOR_BGR2GRAY)
+    
+        # kernels
+        kernel = np.ones((10,10),np.uint8)
+    
+        # image operations
+        mask = cv2.inRange(hsv,lower_blue,upper_blue)
+        res = cv2.bitwise_and(roitrackbar,roitrackbar,mask=mask)
+    
+        opening = cv2.morphologyEx(res,cv2.MORPH_OPEN,kernel)
+        edges = cv2.Canny(opening,150,100)
+    
+        # contourr detection
+        if int(cv2.__version__[0])>3:
+            contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        else :
+            _,contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    
+        for count in contours :
+            area = cv2.contourArea(count)
+            approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
+    
+            if area>area_threshold and len(approx)<length_threshold:
+                rc = cv2.minAreaRect(count)
+                box = cv2.boxPoints(rc)
+    
+                bounding_box(box)
+    
+        # detecting white ball
 
-    for count in contours :
-        area = cv2.contourArea(count)
-        approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
-
-        if area>area_threshold and len(approx)<length_threshold:
-            rc = cv2.minAreaRect(count)
-            box = cv2.boxPoints(rc)
-
-            bounding_box(box)
-
-    # detecting white ball
-
-    haarcascade(roi,rgbaroi)
-
-
-    cv2.imshow("frame",frame)
-    try:
-        cv2.imshow("roi",rgbaroi)
-    except:
-        pass
+        haarcascade(roi,rgbaroi)
+            
+        cv2.imshow("frame",roitrackbar)
+        cv2.imshow("res",res)
+        try:
+            cv2.imshow("roi",roi)
+        except:
+            pass
+    
+    # cv2.imshow("frame",frame)
+    # try:
+    #     cv2.imshow("roi",rgbaroi)
+    # except:
+    #     pass
 
     key = cv2.waitKey(1)
     if key == 27:
