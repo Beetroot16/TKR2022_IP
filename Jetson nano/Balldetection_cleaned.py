@@ -122,7 +122,7 @@ def bounding_box(box):
 
 def haarcascade(roi,rgbaroi):
     global red,yellow,green
-    ball_cascade  = cv2.CascadeClassifier("ball_cascade.xml")
+    ball_cascade  = cv2.CascadeClassifier("cascade.xml")
     ball = ball_cascade.detectMultiScale(rgbaroi,2,1)
     if ball != ():
         red = False
@@ -188,11 +188,6 @@ while  True:
             contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
         else :
             _,contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        
-        if int(cv2.__version__[0])>3:
-            contoursroi,_=cv2.findContours(edgesframe,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        else :
-            _,contoursroi,_=cv2.findContours(edgesframe,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
         if contours == ():
             red = True
@@ -205,16 +200,12 @@ while  True:
         for count in contours :
             area = cv2.contourArea(count)
             approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
+            cv2.drawContours(roi, [approx], 0, (0, 0, 0), 2)
 
             if area>area_threshold and len(approx)<length_threshold:
                 rc = cv2.minAreaRect(count)
                 box = cv2.boxPoints(rc)
                 bounding_box(box)
-        
-        for count in contoursroi :
-            area = cv2.contourArea(count)
-            approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
-            cv2.drawContours(roiedges, [approx], 0, (0, 255, 0), 1)
     
         # detecting white ball
 
@@ -232,7 +223,7 @@ while  True:
         cv2.imshow("res",res)
         cv2.imshow("Checker",checkerimg)
         try:
-            cv2.imshow("roiedges",roiedges)
+            cv2.imshow("roi",roi)
         except:
             pass
     

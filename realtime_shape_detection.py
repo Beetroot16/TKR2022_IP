@@ -54,7 +54,7 @@ while True:
         print(x,y)
 
         if area > 40:
-            cv2.drawContours(frame, [approx], 0, (0, 0, 0), 5)
+            cv2.drawContours(mask, [approx], 0, (0, 255, 0), 5)
 
             if len(approx) == 3:
                 cv2.putText(frame, "Triangle", (x, y), font, 1, (0, 0, 0))

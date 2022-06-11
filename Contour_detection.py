@@ -53,7 +53,7 @@ def bounding_box(box):
 
 
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 font = cv2.FONT_HERSHEY_COMPLEX
     
