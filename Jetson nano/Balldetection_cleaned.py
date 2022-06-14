@@ -24,6 +24,8 @@ cv2.createTrackbar('Y1','image',0,1000,nothing)
 cv2.createTrackbar('Y2','image',0,1000,nothing)
 cv2.createTrackbar('saturation','image',0,355,nothing)
 cv2.createTrackbar('value','image',0,355,nothing)
+cv2.createTrackbar('hue-s','image',90,120,nothing)
+cv2.createTrackbar('hue-e','image',90,120,nothing)
 
 start = None
 end = None
@@ -50,9 +52,15 @@ roi_gray = np.zeros((720,1280,3),dtype= np.uint8)
 
 # defining frame
 frame = np.zeros((100,100,3),dtype=np.uint8)
+
+midx = 0
+midy = 0
+list = ([midx,midy])
+
+count1 = 0
     
 def bounding_box(box):
-    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi,roiedges,x1roi,x2roi,y1roi,y2roi,red,yellow,green
+    global roi , roi_gray , x_coordinates_contour, y_coordinates_contour,frame,start,end,rgbaroi,roiedges,x1roi,x2roi,y1roi,y2roi,red,yellow,green,midx,midy,list
     # x1
     x_coordinates_contour[0]= int(box[0][0])
     # x2
@@ -87,6 +95,11 @@ def bounding_box(box):
     midx = (mid_x1+mid_x2)//2
     midy = (mid_y1+mid_y2)//2
 
+    # cv2.circle(frame,(int(midx),int(midy)),1,(255,255,255))
+    list.append([midx,midy])
+    # print(list)
+    list.pop(0)
+
     # weidth and height of contours
 
     width = x_coordinates_contour[3]-x_coordinates_contour[0]
@@ -113,17 +126,21 @@ def bounding_box(box):
     start = ( x_coordinates_bbox[1] + x1roi,y_coordinates_bbox[1] + y1roi)
     end = (x_coordinates_bbox[3] + x1roi,y_coordinates_bbox[3] + y1roi)
 
-    rect = cv2.rectangle(frame,start,end,(0,0,255),1)
+    rect = cv2.rectangle(frame,start,end,(0,0,255),3)
+    # if rect:
+    #     count += 1
+    # else:
 
     # defining roi
     roi = frame[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
     roiedges = edgesframe[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
     rgbaroi = rgba[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
+    roi_gray = gray[y_coordinates_bbox[1]:y_coordinates_bbox[3],x_coordinates_bbox[1]:x_coordinates_bbox[3]]
 
-def haarcascade(roi,rgbaroi):
+def haarcascade(roi,roi_gray):
     global red,yellow,green
-    ball_cascade  = cv2.CascadeClassifier("cascade.xml")
-    ball = ball_cascade.detectMultiScale(rgbaroi,2,1)
+    ball_cascade  = cv2.CascadeClassifier(r"C:\Users\Vishr\Desktop\TKR2022_IP\Jetson nano\ball_cascade.xml")
+    ball = ball_cascade.detectMultiScale(roi_gray,10,10)
     if ball != ():
         red = False
         yellow = False
@@ -161,11 +178,14 @@ while  True:
     y2roi = cv2.getTrackbarPos('Y2','image')
     sat_thres = cv2.getTrackbarPos('saturation','image')
     val_thres = cv2.getTrackbarPos('value','image')
+    hue_s = cv2.getTrackbarPos('hue-s','image')
+    hue_e = cv2.getTrackbarPos('hue-e','image')
+    
 
-    lower_blue = np.array([90,sat_thres,val_thres])
-    upper_blue = np.array([120,355,355])
+    lower_blue = np.array([hue_s,sat_thres,val_thres])
+    upper_blue = np.array([hue_e,355,355])
 
-    if x2roi>x1roi and y2roi>y1roi:
+    if x2roi>x1roi and y2roi>y1roi and hue_s<hue_e:
         roitrackbar = frame[y1roi:y2roi,x1roi:x2roi]
 
         hsv = cv2.cvtColor(roitrackbar,cv2.COLOR_BGR2HSV)
@@ -205,11 +225,11 @@ while  True:
             if area>area_threshold and len(approx)<length_threshold:
                 rc = cv2.minAreaRect(count)
                 box = cv2.boxPoints(rc)
-                bounding_box(box)
+                bounding_box(box)        
     
         # detecting white ball
 
-        haarcascade(roi,rgbaroi)
+        haarcascade(roi,roi_gray)
 
         colors = [(255,0,0),(255,255,0),(0,255,0)]
         if red == True:
@@ -220,10 +240,10 @@ while  True:
             checkerimg = image_checker(300,300,colors[2])
         
         cv2.imshow("frame",roitrackbar)
-        cv2.imshow("res",res)
-        cv2.imshow("Checker",checkerimg)
+        cv2.imshow("res",opening)
+        # cv2.imshow("Checker",checkerimg)
         try:
-            cv2.imshow("roi",roi)
+            cv2.imshow("roi",roi_gray)
         except:
             pass
     
