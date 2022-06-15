@@ -1,9 +1,8 @@
 import cv2
-from cv2 import COLOR_BGR2HSV
 import numpy as np
 import keyboard 
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -91,39 +90,51 @@ def bounding_box(roimain,box):
     y_coordinates_contour[3]= int(box[3][1])
 
     # (x1+x3)/2
-    mid_x1 = ((x_coordinates_contour[0]+x_coordinates_contour[2])/2)
+    mid_x1 = ((x_coordinates_contour[0]+x_coordinates_contour[1])/2)
     
     # (x2+x4)/2
-    mid_x2 = ((x_coordinates_contour[1]+x_coordinates_contour[3])/2)
+    mid_x2 = ((x_coordinates_contour[3]+x_coordinates_contour[2])/2)
 
      # (y1+y3)/2
-    mid_y1 = ((y_coordinates_contour[0]+y_coordinates_contour[2])/2)
+    mid_y1 = ((y_coordinates_contour[3]+y_coordinates_contour[0])/2)
     
     # (y2+y4)/2
-    mid_y2 = ((y_coordinates_contour[1]+y_coordinates_contour[3])/2)
+    mid_y2 = ((y_coordinates_contour[1]+y_coordinates_contour[2])/2)
 
     # final contour midpoint
     midx = (mid_x1+mid_x2)//2
     midy = (mid_y1+mid_y2)//2
 
-    width = x_coordinates_contour[3]-x_coordinates_contour[0]
-    height = y_coordinates_contour[3]- y_coordinates_contour[2]
+    width = x_coordinates_contour[2]-x_coordinates_contour[0]
+    height = y_coordinates_contour[3]- y_coordinates_contour[0]
 
+    x_coordinates_bbox[0] = int(x_coordinates_contour[0]-width)
     x_coordinates_bbox[1] = int(x_coordinates_contour[1]-width)
+    x_coordinates_bbox[2] = int(x_coordinates_contour[2]+width)
     x_coordinates_bbox[3] = int(x_coordinates_contour[3]+width)
 
+    y_coordinates_bbox[0] = int(y_coordinates_contour[0])
     y_coordinates_bbox[1] = int(y_coordinates_contour[1]-(height*2))
+    y_coordinates_bbox[2] = int(y_coordinates_contour[2]-(height*2))
     y_coordinates_bbox[3] = int(y_coordinates_contour[3])
 
-    start = ( x_coordinates_bbox[1],y_coordinates_bbox[1])
-    end = (x_coordinates_bbox[3],y_coordinates_bbox[3])
+    start = (x_coordinates_bbox[0],y_coordinates_bbox[1])
+    end = (x_coordinates_bbox[2],y_coordinates_bbox[3])
 
-    rect = cv2.rectangle(roimain,start,end,(0,0,255),3)
+    # print(width,height)
+
+    # xtest = 310
+    # ytest = 400 
+    xtest = int(mid_x1)
+    ytest = int(mid_y1)
+    print(xtest,ytest)
+    rect = cv2.rectangle(roimain,end,start,(0,0,255),3)
+    cv2.circle(frame,((xtest,ytest)),5,(0,255,0))
 
 while True:
     ret, frame = cap.read()
 
-    roimain = frame #defaultroi 
+    roimain = frame #defaultroi
 
     if keyboard.is_pressed('1'):  # if key 'q' is pressed 
         key = 1
