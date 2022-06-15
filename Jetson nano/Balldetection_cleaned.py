@@ -165,7 +165,7 @@ def image_checker(width, height, rgb_color=(0, 0, 0)):
 
     return checkerimage
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 while  True:
     _, frame = cap.read()
@@ -220,11 +220,12 @@ while  True:
         for count in contours :
             area = cv2.contourArea(count)
             approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
-            cv2.drawContours(roi, [approx], 0, (0, 0, 0), 2)
+            # cv2.drawContours(roi, [approx], 0, (0, 0, 0), 2)
 
             if area>area_threshold and len(approx)<length_threshold:
                 rc = cv2.minAreaRect(count)
                 box = cv2.boxPoints(rc)
+                print(box)
                 bounding_box(box)        
     
         # detecting white ball
