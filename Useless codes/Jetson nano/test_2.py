@@ -1,10 +1,10 @@
 import cv2
-from cv2 import COLOR_BGR2HSV
+# from cv2 import COLOR_BGR2HSV
 import numpy as np
 import serial
 import keyboard 
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 roimain = np.zeros((720,1280,3),dtype= np.uint8)
 
