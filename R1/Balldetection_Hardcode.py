@@ -4,7 +4,7 @@ import keyboard
 import serial
 import time
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1) 
 
@@ -43,6 +43,8 @@ y2roi = 0
 key = 0
 
 keys = [1,2,3,4,5,6,7,8,9,10,11]
+
+list = [' ',' ',' ',' ']
 
 def image_operations(roimain,kernel):
     hsv = cv2.cvtColor(roimain,cv2.COLOR_BGR2HSV)
@@ -145,91 +147,90 @@ def bounding_box(roimain,box):
     x_cord = str(xtest)+"\n"
     x_cord = x_cord.encode('utf-8')
     arduino.write(x_cord)
-
-    line = arduino.read_all().decode()
-    print(line)
-    # time.sleep(1)
-
-    y_ind = ":;"
+    # line = arduino.read_all().decode()
+    # print(line)
+    time.sleep(0.02)
+    y_ind = "#;"
     y_ind =y_ind.encode("utf-8")
     arduino.write(y_ind)
     y_cord = str(ytest)+"\n"
     y_cord = y_cord.encode('utf-8')
     arduino.write(y_cord)
-
-    line2 = arduino.read_all().decode()
-    print(line2) 
-    # time.sleep(1)
+    # line2 = arduino.read_all().decode()
+    # print(line2) 
+    time.sleep(0.02)
 
 def keybinds():
-    global x1roi,y1roi,x2roi,y2roi,key
-    if keyboard.is_pressed('e'):  # if key 'q' is pressed
-        x1roi = 237
-        x2roi = 394
-        y1roi = 170
-        y2roi = 295
-        key = 1
-    if keyboard.is_pressed('c'):  # if key 'q' is pressed 
-        x1roi = 257
-        x2roi = 407
-        y1roi = 165
-        y2roi = 303
-        key = 2
-    if keyboard.is_pressed('b'):  # if key 'q' is pressed 
-        x1roi = 252
-        x2roi = 387
-        y1roi = 224
-        y2roi = 318
-        key = 3
-    if keyboard.is_pressed('d'):  # if key 'q' is pressed 
-        x1roi = 244
-        x2roi = 399
-        y1roi = 216
-        y2roi = 331
-        key = 4
-    if keyboard.is_pressed('a'):  # if key 'q' is pressed 
-        x1roi = 252
-        x2roi = 382
-        y1roi = 262
-        y2roi = 351
-        key = 5
-    if keyboard.is_pressed('f'):  # if key 'q' is pressed 
-        x1roi = 237
-        x2roi = 389
-        y1roi = 260
-        y2roi = 356
-        key = 6
-    if keyboard.is_pressed('k'):  # if key 'q' is pressed 
-        x1roi = 219
-        x2roi = 387
-        y1roi = 196
-        y2roi = 300
-        key = 7
-    if keyboard.is_pressed('h'):  # if key 'q' is pressed 
-        x1roi = 252
-        x2roi = 387
-        y1roi = 201
-        y2roi = 300
-        key = 8
-    if keyboard.is_pressed('j'):  # if key 'q' is pressed 
-        x1roi = 206
-        x2roi = 382
-        y1roi = 237
-        y2roi = 356
-        key = 9
-    if keyboard.is_pressed('g'):  # if key 'q' is pressed 
-        x1roi = 260
-        x2roi = 427
-        y1roi = 262
-        y2roi = 366
-        key = 10
-    if keyboard.is_pressed('i'):  # if key 'q' is pressed 
-        x1roi = 247
-        x2roi = 382
-        y1roi = 272
-        y2roi = 377
-        key = 11
+    global x1roi,y1roi,x2roi,y2roi,key,list
+    if len(list) == 7:
+        if keyboard.is_pressed('e'):  # if key 'q' is pressed
+            x1roi = 237
+            x2roi = 394
+            y1roi = 170
+            y2roi = 295
+            key = 1
+        if keyboard.is_pressed('c'):  # if key 'q' is pressed 
+            x1roi = 257
+            x2roi = 407
+            y1roi = 165
+            y2roi = 303
+            key = 2
+        if keyboard.is_pressed('b'):  # if key 'q' is pressed 
+            x1roi = 252
+            x2roi = 387
+            y1roi = 224
+            y2roi = 318
+            key = 3
+        if keyboard.is_pressed('d'):  # if key 'q' is pressed 
+            x1roi = 244
+            x2roi = 399
+            y1roi = 216
+            y2roi = 331
+            key = 4
+        if keyboard.is_pressed('a') or list[2] == 'a':  # if key 'q' is pressed 
+            x1roi = 252
+            x2roi = 382
+            y1roi = 262
+            y2roi = 351
+            key = 5
+        if keyboard.is_pressed('f'):  # if key 'q' is pressed 
+            x1roi = 237
+            x2roi = 389
+            y1roi = 260
+            y2roi = 356
+            key = 6
+        if keyboard.is_pressed('k'):  # if key 'q' is pressed 
+            x1roi = 219
+            x2roi = 387
+            y1roi = 196
+            y2roi = 300
+            key = 7
+        if keyboard.is_pressed('h'):  # if key 'q' is pressed 
+            x1roi = 252
+            x2roi = 387
+            y1roi = 201
+            y2roi = 300
+            key = 8
+        if keyboard.is_pressed('j'):  # if key 'q' is pressed 
+            x1roi = 206
+            x2roi = 382
+            y1roi = 237
+            y2roi = 356
+            key = 9
+        if keyboard.is_pressed('g'):  # if key 'q' is pressed 
+            x1roi = 260
+            x2roi = 427
+            y1roi = 262
+            y2roi = 366
+            key = 10
+        if keyboard.is_pressed('i'):  # if key 'q' is pressed 
+            x1roi = 247
+            x2roi = 382
+            y1roi = 272
+            y2roi = 377
+            key = 11
 
+time.sleep(1)
 while True:
     ret, frame = cap.read()
 
@@ -246,6 +247,12 @@ while True:
         bounding_box(roimain,box)
     except:
         pass
+
+    co = arduino.read_all().decode()
+    list = co.split(' ')
+    # print(len(list))
+    if len(list) == 7:
+        print(list[2])
 
     # cv2.imshow('frame',frame)
     cv2.imshow('roimain',roimain)
