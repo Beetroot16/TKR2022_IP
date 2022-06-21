@@ -161,13 +161,13 @@ while True:
     #cv2.imshow("hsv", hsv)
     #cv2.imshow("Canny", edges)
     #cv2.imshow("res", res)
-    cv2.imshow("Opening",opening)
+    # cv2.imshow("Opening",opening)
     #cv2.imshow("test",blank_image)
     #cv2.imshow("test2",box_new)
-    try:
-        cv2.imshow("Blank",roi)
-    except:
-        pass
+    # try:
+        # cv2.imshow("Blank",roi)
+    # except:
+    #     pass
 
     key = cv2.waitKey(1)
     if key == 27:

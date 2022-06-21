@@ -225,7 +225,7 @@ while  True:
             if area>area_threshold and len(approx)<length_threshold:
                 rc = cv2.minAreaRect(count)
                 box = cv2.boxPoints(rc)
-                print(box)
+                # print(box)
                 bounding_box(box)        
     
         # detecting white ball
