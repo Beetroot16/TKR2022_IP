@@ -2,12 +2,12 @@ from cmath import e
 import cv2
 import numpy as np
 import keyboard
-import serial
+# import serial
 import time
 
 cap = cv2.VideoCapture(0)
 
-arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1) 
+# arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1) 
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -140,31 +140,31 @@ def bounding_box(roimain,box):
     rect = cv2.rectangle(roimain,end,start,(0,0,255),3)
     cv2.circle(frame,((xtest + x1roi,ytest + y1roi)),5,(0,0,255))
 
-    x_ind = ":;"
-    x_ind = x_ind.encode("utf-8")
-    arduino.write(x_ind)
-    x_cord = str(xtest)+"\n"
-    x_cord = x_cord.encode('utf-8')
-    arduino.write(x_cord)
+    # x_ind = ":;"
+    # x_ind = x_ind.encode("utf-8")
+    # arduino.write(x_ind)
+    # x_cord = str(xtest)+"\n"
+    # x_cord = x_cord.encode('utf-8')
+    # arduino.write(x_cord)
 
-    line = arduino.read_all().decode()
-    print(line)
-    # time.sleep(1)
+    # line = arduino.read_all().decode()
+    # print(line)
+    # # time.sleep(1)
 
-    y_ind = ":;"
-    y_ind =y_ind.encode("utf-8")
-    arduino.write(y_ind)
-    y_cord = str(ytest)+"\n"
-    y_cord = y_cord.encode('utf-8')
-    arduino.write(y_cord)
+    # y_ind = ":;"
+    # y_ind =y_ind.encode("utf-8")
+    # arduino.write(y_ind)
+    # y_cord = str(ytest)+"\n"
+    # y_cord = y_cord.encode('utf-8')
+    # arduino.write(y_cord)
 
-    line2 = arduino.read_all().decode()
-    print(line2) 
-    # time.sleep(1)
+    # line2 = arduino.read_all().decode()
+    # print(line2) 
+    # # time.sleep(1)
 
 def keybinds():
     global x1roi,y1roi,x2roi,y2roi,key
-    if keyboard.is_pressed('e'):  # if key 'q' is pressed
+    if keyboard.is_pressed('e') :  # if key 'q' is pressed
         x1roi = 237
         x2roi = 394
         y1roi = 170

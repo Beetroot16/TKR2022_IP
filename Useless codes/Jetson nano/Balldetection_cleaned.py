@@ -165,7 +165,7 @@ def image_checker(width, height, rgb_color=(0, 0, 0)):
 
     return checkerimage
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
 while  True:
     _, frame = cap.read()
@@ -230,7 +230,7 @@ while  True:
     
         # detecting white ball
 
-        haarcascade(roi,roi_gray)
+        # haarcascade(roi,roi_gray)
 
         colors = [(255,0,0),(255,255,0),(0,255,0)]
         if red == True:
