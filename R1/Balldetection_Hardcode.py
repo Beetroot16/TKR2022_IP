@@ -1,13 +1,12 @@
-from cmath import e
 import cv2
 import numpy as np
 import keyboard
-# import serial
+import serial
 import time
 
 cap = cv2.VideoCapture(0)
 
-# arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1) 
+arduino = serial.Serial(port='COM20', baudrate=115200, timeout=1) 
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -139,7 +138,13 @@ def bounding_box(roimain,box):
     ytest = int(midy)
     rect = cv2.rectangle(roimain,end,start,(0,0,255),3)
     cv2.circle(frame,((xtest + x1roi,ytest + y1roi)),5,(0,0,255))
-
+    cv2.circle(frame,((320,ytest + y1roi)),2,(255,255,255))
+    
+    difference = xtest - 320
+    # print(difference)
+    data = str(difference)+"\n"
+    data = data.encode('utf-8')
+    arduino.write(data)
     # x_ind = ":;"
     # x_ind = x_ind.encode("utf-8")
     # arduino.write(x_ind)
@@ -147,8 +152,8 @@ def bounding_box(roimain,box):
     # x_cord = x_cord.encode('utf-8')
     # arduino.write(x_cord)
 
-    # line = arduino.read_all().decode()
-    # print(line)
+    line = arduino.read_all().decode()
+    print(line)
     # # time.sleep(1)
 
     # y_ind = ":;"

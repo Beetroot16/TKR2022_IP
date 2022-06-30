@@ -127,10 +127,7 @@ def bounding_box(box):
     end = (x_coordinates_bbox[3] + x1roi,y_coordinates_bbox[3] + y1roi)
 
     rect = cv2.rectangle(frame,start,end,(0,0,255),3)
-    # if rect:
-    #     count += 1
-    # else:
-
+    # circle = cv2.circle(frame,start,2,(0,255,0),5)
     # defining roi
     roi = frame[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
     roiedges = edgesframe[y_coordinates_bbox[1]+y1roi:y_coordinates_bbox[3]+y1roi,x_coordinates_bbox[1]+x1roi:x_coordinates_bbox[3]+x1roi]
@@ -184,6 +181,8 @@ while  True:
 
     lower_blue = np.array([hue_s,sat_thres,val_thres])
     upper_blue = np.array([hue_e,355,355])
+
+    cv2.circle(frame,(320,260),2,(0,0,0),5)
 
     if x2roi>x1roi and y2roi>y1roi and hue_s<hue_e:
         roitrackbar = frame[y1roi:y2roi,x1roi:x2roi]

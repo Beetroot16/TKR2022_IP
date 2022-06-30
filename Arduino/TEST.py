@@ -5,7 +5,11 @@ import time
 
 cap = cv2.VideoCapture(1)
 
+<<<<<<< HEAD
+arduino = serial.Serial(port='COM3', baudrate=9600, timeout=0.1) 
+=======
 arduino = serial.Serial(port='COM7', baudrate=9600, timeout=0.1) 
+>>>>>>> 890daa407f383dbc5bd992c1d27c11ff3db1f0d2
 
 #defining main roi
 roimain = np.zeros((480,480,3))
