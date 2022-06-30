@@ -5,7 +5,7 @@ import keyboard
 # import serial
 import time
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 # arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1) 
 
@@ -269,16 +269,16 @@ while True:
     if x2roi>x1roi and y2roi>y1roi and hue_s<hue_e:
         roimain = frame[y1roi:y2roi,x1roi:x2roi]
 
-    edges = image_operations(roimain,kernel)
-    box = contour_detection(roimain,edges)
-    try:
-        bounding_box(roimain,box)
-    except:
-        pass
+        edges = image_operations(roimain,kernel)
+        box = contour_detection(roimain,edges)
+        try:
+            bounding_box(roimain,box)
+        except:
+            pass
 
-    cv2.imshow('frame',frame)
-    cv2.imshow('roimain',roimain)
-    cv2.imshow('edges',edges)
+        # cv2.imshow('frame',frame)
+        cv2.imshow('roimain',roimain)
+        # cv2.imshow('edges',edges)
 
     if cv2.waitKey(1) and 0xFF == ('q'):
         break
