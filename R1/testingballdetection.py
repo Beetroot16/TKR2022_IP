@@ -1,13 +1,11 @@
-
 import cv2
 import numpy as np
 import keyboard
-# import serial
-import time
+import serial
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 
-# arduino = serial.Serial(port='COM3', baudrate=9600, timeout=1) 
+arduino = serial.Serial(port='COM20', baudrate=115200, timeout=1) 
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -42,8 +40,8 @@ def nothing(x):
 img = np.zeros((300,400,3),dtype = np.uint8)
 cv2.namedWindow('image',cv2.WINDOW_AUTOSIZE)
 
-cv2.createTrackbar('X1','image',0,1000,nothing)
-cv2.createTrackbar('X2','image',0,1000,nothing)
+cv2.createTrackbar('X1','image',0,640,nothing)
+cv2.createTrackbar('X2','image',0,640,nothing)
 cv2.createTrackbar('Y1','image',0,1000,nothing)
 cv2.createTrackbar('Y2','image',0,1000,nothing)
 cv2.createTrackbar('saturation','image',0,355,nothing)
@@ -101,7 +99,7 @@ def contour_detection(roimain,edges):
 
         return box
 
-def bounding_box(roimain,box):
+def bounding_box(roimain,box,x2,x1):
     global x_coordinates_contour,x_coordinates_bbox,y_coordinates_contour,y_coordinates_bbox,midx,midy
     # x1
     x_coordinates_contour[0]= int(box[0][0])
@@ -157,13 +155,23 @@ def bounding_box(roimain,box):
     ytest = int(midy)
     rect = cv2.rectangle(roimain,end,start,(0,0,255),3)
     cv2.circle(frame,((xtest + x1roi,ytest + y1roi)),5,(0,0,255))
+    cv2.circle(frame,((320,ytest + y1roi)),2,(255,255,255))
 
+    difference = xtest - (x2-x1)/2
+
+    data = str(difference)+"\n"
+    data = data.encode('utf-8')
+    arduino.write(data)
+    # x_ind = ":;"
     # x_ind = ":;"
     # x_ind = x_ind.encode("utf-8")
     # arduino.write(x_ind)
     # x_cord = str(xtest)+"\n"
     # x_cord = x_cord.encode('utf-8')
     # arduino.write(x_cord)
+
+    line = arduino.read_all().decode()
+    print(line)
 
     # line = arduino.read_all().decode()
     # print(line)
@@ -272,7 +280,7 @@ while True:
         edges = image_operations(roimain,kernel)
         box = contour_detection(roimain,edges)
         try:
-            bounding_box(roimain,box)
+            bounding_box(roimain,box,x2,x1)
         except:
             pass
 
