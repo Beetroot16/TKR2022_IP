@@ -112,7 +112,7 @@ def haarcascade(roi,rgbaroi):
 
         rect = cv2.rectangle(frame,start,end,(0,255,255),2)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 while  True:
     _, frame = cap.read()
@@ -149,7 +149,7 @@ while  True:
 
     # detecting white ball
 
-    haarcascade(roi,rgbaroi)
+    # haarcascade(roi,rgbaroi)
 
 
     cv2.imshow("frame",frame)
