@@ -5,7 +5,7 @@ import time
 
 cap = cv2.VideoCapture(1)
 
-arduino = serial.Serial(port='COM18', baudrate=38400, timeout=0.1) 
+arduino = serial.Serial(port='COM3', baudrate=9600, timeout=0.1) 
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -149,7 +149,7 @@ def keybinds():
     dataread = arduino.read_all().decode()
     # if dataread == 'e':
     #     print("recieved")
-    # print(dataread)
+    print(dataread)
 
     if dataread == 'e':  # if key 'q' is pressed
         x1roi = 237
