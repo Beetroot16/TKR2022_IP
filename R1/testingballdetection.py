@@ -14,10 +14,6 @@ roimain = np.zeros((480,480,3))
 
 key = None
 
-#defining blue for mask
-lower_blue = np.array([90,100,100])
-upper_blue = np.array([120,355,355])
-
 #kernel
 kernel = np.ones((10,10),np.uint8)
 
@@ -71,9 +67,10 @@ def image_operations(roimain,kernel):
     opening = cv2.morphologyEx(res,cv2.MORPH_OPEN,kernel)
     edges = cv2.Canny(opening,150,100)
 
+
     cv2.imshow('opening',opening) #for debugging
     
-    return mask
+    return edges
 
 def contour_detection(roimain,edges):
     global red,yellow,green,box
@@ -262,7 +259,15 @@ while True:
     hue_s = cv2.getTrackbarPos('hue-s','image')
     hue_e = cv2.getTrackbarPos('hue-e','image')
 
+    #defining blue for mask
+    lower_blue = np.array([hue_s,sat_thres,val_thres])
+    upper_blue = np.array([hue_e,355,355])
+
+    # lower_blue = np.array([90,50,50])
+    # upper_blue = np.array([120,355,355])
+
     roimain = frame #defaultroi
+
     
     # keybinds()
 
