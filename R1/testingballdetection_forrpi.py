@@ -1,13 +1,10 @@
 import cv2
 import numpy as np
-import serial
 import requests
 
 cap = cv2.VideoCapture(0)
 
 url = r"http://192.168.211.122:8080/shot.jpg"
-
-arduino = serial.Serial(port='COM20', baudrate=115200, timeout=1) 
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -34,19 +31,6 @@ midy = 0
 #for roi 
 def nothing(x):
     pass
-
-img = np.zeros((300,400,3),dtype = np.uint8)
-cv2.namedWindow('image',cv2.WINDOW_AUTOSIZE)
-
-cv2.createTrackbar('X1','image',0,640,nothing)
-cv2.createTrackbar('X2','image',0,640,nothing)
-cv2.createTrackbar('Y1','image',0,1000,nothing)
-cv2.createTrackbar('Y2','image',0,1000,nothing)
-cv2.createTrackbar('saturation','image',0,355,nothing)
-cv2.createTrackbar('value','image',0,355,nothing)
-cv2.createTrackbar('hue-s','image',90,120,nothing)
-cv2.createTrackbar('hue-e','image',90,120,nothing)
-
 
 box = [[0,0],[0,0],[0,0],[0,0]]
 
@@ -161,13 +145,6 @@ def bounding_box(roimain,box,x2,x1):
 
     print(difference)
 
-    data = str(difference)+"\n"
-    data = data.encode('utf-8')
-    arduino.write(data)
-
-    line = arduino.read_all().decode()
-    print(line)
-
 def r2(image):
     cv2.rectangle(image, (125,-10), (200,550), (0,0,255), 5)
     cv2.rectangle(image, (275,-10), (350,550), (0,0,255), 5)
@@ -176,51 +153,38 @@ def r2(image):
 while True:
     ret, frame = cap.read()
 
-    ret, frame = cap.read()
-
     online_vid = requests.get(url)
     online_vid_arr = np.array(bytearray(online_vid.content),dtype = np.uint8)
     online_img = cv2.imdecode(online_vid_arr, -1)
 
     img = online_img
     image = img
-    r2(image)
 
-    x1roi = cv2.getTrackbarPos('X1','image')
-    x2roi = cv2.getTrackbarPos('X2','image')
-    y1roi = cv2.getTrackbarPos('Y1','image')
-    y2roi = cv2.getTrackbarPos('Y2','image')
-    sat_thres = cv2.getTrackbarPos('saturation','image')
-    val_thres = cv2.getTrackbarPos('value','image')
-    hue_s = cv2.getTrackbarPos('hue-s','image')
-    hue_e = cv2.getTrackbarPos('hue-e','image')
+    r2(image)
+            
+    cv2.imshow('image_window',image)
 
     #defining blue for mask
-    lower_blue = np.array([hue_s,sat_thres,val_thres])
-    upper_blue = np.array([hue_e,355,355])
+    # lower_blue = np.array([hue_s,sat_thres,val_thres])
+    # upper_blue = np.array([hue_e,355,355])
 
-    # lower_blue = np.array([90,50,50])
-    # upper_blue = np.array([120,355,355])
+    lower_blue = np.array([90,50,50])
+    upper_blue = np.array([120,355,355])
 
     roimain = frame #defaultroi
 
-    
-    # keybinds()
+    # roimain = frame[y1roi:y2roi,x1roi:x2roi]
 
-    if x2roi>x1roi and y2roi>y1roi and hue_s<hue_e:
-        roimain = frame[y1roi:y2roi,x1roi:x2roi]
+    edges = image_operations(roimain,kernel)
+    box = contour_detection(roimain,edges)
+    try:
+        bounding_box(roimain,box,x2roi,x1roi)
+    except:
+        pass
 
-        edges = image_operations(roimain,kernel)
-        box = contour_detection(roimain,edges)
-        try:
-            bounding_box(roimain,box,x2roi,x1roi)
-        except:
-            pass
-
-        # cv2.imshow('frame',frame)
-        cv2.imshow('roimain',roimain)
-        cv2.imshow('image_window',image)
-        # cv2.imshow('edges',edges)
+    # cv2.imshow('frame',frame)
+    cv2.imshow('roimain',roimain)
+    # cv2.imshow('edges',edges)
 
     if cv2.waitKey(1) and 0xFF == ('q'):
         break
