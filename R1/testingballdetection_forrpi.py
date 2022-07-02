@@ -52,7 +52,7 @@ def image_operations(roimain,kernel):
     edges = cv2.Canny(opening,150,100)
 
 
-    cv2.imshow('opening',opening) #for debugging
+    # cv2.imshow('opening',opening) #for debugging
     
     return edges
 
@@ -184,7 +184,7 @@ while True:
 
     # cv2.imshow('frame',frame)
     cv2.imshow('roimain',roimain)
-    # cv2.imshow('edges',edges)
+    # cv2.imshow('edges',edges)im
 
     if cv2.waitKey(1) and 0xFF == ('q'):
         break
