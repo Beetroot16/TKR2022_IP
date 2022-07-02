@@ -143,7 +143,7 @@ def bounding_box(roimain,box,x2,x1):
 
     difference = xtest + x1roi - 320
 
-    print(difference)
+    # print(difference)
 
 def r2(image):
     cv2.rectangle(image, (125,-10), (200,550), (0,0,255), 5)
@@ -182,7 +182,7 @@ while True:
     except:
         pass
 
-    # cv2.imshow('frame',frame)
+    # cv2.('frame',frame)
     cv2.imshow('roimain',roimain)
     # cv2.imshow('edges',edges)im
 
