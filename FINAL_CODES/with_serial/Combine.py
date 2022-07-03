@@ -1,13 +1,13 @@
-import cv2
+from cv2 import VideoCapture,cvtColor,COLOR_BGR2HSV,inRange,bitwise_and,morphologyEx,MORPH_OPEN,Canny,__version__,findContours,RETR_TREE,CHAIN_APPROX_SIMPLE,contourArea,approxPolyDP,arcLength,minAreaRect,boxPoints,rectangle,circle,imdecode,imshow,waitKey,destroyAllWindows,moveWindow,namedWindow
 import numpy as np
-import serial
 import requests
+from serial import Serial
 
-cap = cv2.VideoCapture(0)
+cap = VideoCapture(0)
+
+arduino = Serial(port='COM20', baudrate=115200, timeout=1) 
 
 url = r"http://192.168.211.122:8080/shot.jpg"
-
-arduino = serial.Serial(port='COM20', baudrate=115200, timeout=1) 
 
 #defining main roi
 roimain = np.zeros((480,480,3))
@@ -30,23 +30,9 @@ y_coordinates_bbox = [0,0,0,0]
 midx = 0
 midy = 0
 
-
 #for roi 
 def nothing(x):
     pass
-
-img = np.zeros((300,400,3),dtype = np.uint8)
-cv2.namedWindow('image',cv2.WINDOW_AUTOSIZE)
-
-cv2.createTrackbar('X1','image',0,640,nothing)
-cv2.createTrackbar('X2','image',0,640,nothing)
-cv2.createTrackbar('Y1','image',0,1000,nothing)
-cv2.createTrackbar('Y2','image',0,1000,nothing)
-cv2.createTrackbar('saturation','image',0,355,nothing)
-cv2.createTrackbar('value','image',0,355,nothing)
-cv2.createTrackbar('hue-s','image',90,120,nothing)
-cv2.createTrackbar('hue-e','image',90,120,nothing)
-
 
 box = [[0,0],[0,0],[0,0],[0,0]]
 
@@ -60,24 +46,24 @@ key = 0
 keys = [1,2,3,4,5,6,7,8,9,10,11]
 
 def image_operations(roimain,kernel):
-    hsv = cv2.cvtColor(roimain,cv2.COLOR_BGR2HSV)
-    mask = cv2.inRange(hsv,lower_blue,upper_blue)
-    res = cv2.bitwise_and(roimain,roimain,mask=mask)
+    hsv = cvtColor(roimain,COLOR_BGR2HSV)
+    mask = inRange(hsv,lower_blue,upper_blue)
+    res = bitwise_and(roimain,roimain,mask=mask)
 
-    opening = cv2.morphologyEx(res,cv2.MORPH_OPEN,kernel)
-    edges = cv2.Canny(opening,150,100)
+    opening = morphologyEx(res,MORPH_OPEN,kernel)
+    edges = Canny(opening,150,100)
 
 
-    cv2.imshow('opening',opening) #for debugging
+    # cv2.imshow('opening',opening) #for debugging
     
     return edges
 
 def contour_detection(roimain,edges):
     global red,yellow,green,box
-    if int(cv2.__version__[0])>3:
-            contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    if int(__version__[0])>3:
+            contours,_=findContours(edges,RETR_TREE,CHAIN_APPROX_SIMPLE)
     else :
-        _,contours,_=cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        _,contours,_=findContours(edges,RETR_TREE,CHAIN_APPROX_SIMPLE)
     
     if contours == ():
         red = True
@@ -89,12 +75,12 @@ def contour_detection(roimain,edges):
         green = False
 
     for count in contours :
-        area = cv2.contourArea(count)
-        approx = cv2.approxPolyDP(count,0.02*cv2.arcLength(count,True),True)
+        area = contourArea(count)
+        approx = approxPolyDP(count,0.02*arcLength(count,True),True)
         # cv2.drawContours(roimain, [approx], 0, (0, 0, 0), 5)
     
-        rc = cv2.minAreaRect(count)
-        box = cv2.boxPoints(rc)
+        rc = minAreaRect(count)
+        box = boxPoints(rc)
 
         return box
 
@@ -152,14 +138,14 @@ def bounding_box(roimain,box,x2,x1):
 
     xtest = int(midx)
     ytest = int(midy)
-    rect = cv2.rectangle(roimain,end,start,(0,0,255),3)
-    cv2.circle(frame,(xtest + x1roi,ytest + y1roi),5,(0,0,255))
+    rect = rectangle(roimain,end,start,(0,0,255),3)
+    circle(frame,(xtest + x1roi,ytest + y1roi),5,(0,0,255))
     # cv2.circle(frame,((int((x2-x1)/2 + x1),ytest + y1roi)),2,(255,255,255))
-    cv2.circle(frame,(320,ytest + y1roi),2,(0,255,255))
+    circle(frame,(320,ytest + y1roi),2,(0,255,255))
 
     difference = xtest + x1roi - 320
 
-    print(difference)
+    # print(difference)
 
     data = str(difference)+"\n"
     data = data.encode('utf-8')
@@ -168,59 +154,53 @@ def bounding_box(roimain,box,x2,x1):
     line = arduino.read_all().decode()
     print(line)
 
-def r2(image):
-    cv2.rectangle(image, (125,-10), (200,550), (0,0,255), 5)
-    cv2.rectangle(image, (275,-10), (350,550), (0,0,255), 5)
-    cv2.rectangle(image, (425,-10), (500,550), (0,0,255), 5)
+def r2(url):
+    online_vid = requests.get(url)
+    online_vid_arr = np.array(bytearray(online_vid.content),dtype = np.uint8)
+    online_img = imdecode(online_vid_arr, -1)
+
+    img = online_img
+    image = img
+
+    rectangle(image, (140,-10), (210,250), (0,0,0), 5)
+    rectangle(image, (310,-10), (385,250), (0,0,0), 5)
+    rectangle(image, (475,-10), (555,250), (0,0,0), 5)
+    circle(image,(174,130),35,(0,0,0),5)
+    circle(image,(345,130),35,(0,0,0),5)
+    circle(image,(515,132),35,(0,0,0),5)
+
+    imshow('image_window',image)
 
 while True:
     ret, frame = cap.read()
 
-    online_vid = requests.get(url)
-    online_vid_arr = np.array(bytearray(online_vid.content),dtype = np.uint8)
-    online_img = cv2.imdecode(online_vid_arr, -1)
-
-    img = online_img
-    image = img
-    r2(image)
-
-    x1roi = cv2.getTrackbarPos('X1','image')
-    x2roi = cv2.getTrackbarPos('X2','image')
-    y1roi = cv2.getTrackbarPos('Y1','image')
-    y2roi = cv2.getTrackbarPos('Y2','image')
-    sat_thres = cv2.getTrackbarPos('saturation','image')
-    val_thres = cv2.getTrackbarPos('value','image')
-    hue_s = cv2.getTrackbarPos('hue-s','image')
-    hue_e = cv2.getTrackbarPos('hue-e','image')
-
     #defining blue for mask
-    lower_blue = np.array([hue_s,sat_thres,val_thres])
-    upper_blue = np.array([hue_e,355,355])
+    # lower_blue = np.array([hue_s,sat_thres,val_thres])
+    # upper_blue = np.array([hue_e,355,355])
 
-    # lower_blue = np.array([90,50,50])
-    # upper_blue = np.array([120,355,355])
+    lower_blue = np.array([90,50,50])
+    upper_blue = np.array([120,355,355])
 
     roimain = frame #defaultroi
 
+    # roimain = frame[y1roi:y2roi,x1roi:x2roi]
+
+    edges = image_operations(roimain,kernel)
+    box = contour_detection(roimain,edges)
+    try:
+        bounding_box(roimain,box,x2roi,x1roi)
+    except:
+        pass
     
-    # keybinds()
+    winname = "frame"
+    namedWindow(winname)  
+    moveWindow(winname, 200,300)
+    imshow(winname,frame)
+    r2(url)
+    # cv2.imshow('roimain',roimain)
+    # cv2.imshow('edges',edges)
 
-    if x2roi>x1roi and y2roi>y1roi and hue_s<hue_e:
-        roimain = frame[y1roi:y2roi,x1roi:x2roi]
-
-        edges = image_operations(roimain,kernel)
-        box = contour_detection(roimain,edges)
-        try:
-            bounding_box(roimain,box,x2roi,x1roi)
-        except:
-            pass
-
-        # cv2.imshow('frame',frame)
-        cv2.imshow('roimain',roimain)
-        cv2.imshow('image_window',image)
-        # cv2.imshow('edges',edges)
-
-    if cv2.waitKey(1) and 0xFF == ('q'):
+    if waitKey(1) and 0xFF == ('q'):
         break
 cap.release()
-cv2.destroyAllWindows()
+destroyAllWindows()

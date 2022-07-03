@@ -1,18 +1,16 @@
 from cv2 import VideoCapture,cvtColor,COLOR_BGR2HSV,inRange,bitwise_and,morphologyEx,MORPH_OPEN,Canny,__version__,findContours,RETR_TREE,CHAIN_APPROX_SIMPLE,contourArea,approxPolyDP,arcLength,minAreaRect,boxPoints,rectangle,circle,imdecode,imshow,waitKey,destroyAllWindows,moveWindow,namedWindow
-import numpy as np
-import requests
+from numpy import zeros,ones,uint8,array
+
 
 cap = VideoCapture(0)
 
-url = r"http://192.168.211.122:8080/shot.jpg"
-
 #defining main roi
-roimain = np.zeros((480,480,3))
+roimain = zeros((480,480,3))
 
 key = None
 
 #kernel
-kernel = np.ones((10,10),np.uint8)
+kernel = ones((10,10),uint8)
 
 #For imchecker
 red = True
@@ -144,23 +142,6 @@ def bounding_box(roimain,box,x2,x1):
 
     # print(difference)
 
-def r2(url):
-    online_vid = requests.get(url)
-    online_vid_arr = np.array(bytearray(online_vid.content),dtype = np.uint8)
-    online_img = imdecode(online_vid_arr, -1)
-
-    img = online_img
-    image = img
-
-    rectangle(image, (140,-10), (210,250), (0,0,0), 5)
-    rectangle(image, (310,-10), (385,250), (0,0,0), 5)
-    rectangle(image, (475,-10), (555,250), (0,0,0), 5)
-    circle(image,(174,130),35,(0,0,0),5)
-    circle(image,(345,130),35,(0,0,0),5)
-    circle(image,(515,132),35,(0,0,0),5)
-
-    imshow('image_window',image)
-
 while True:
     ret, frame = cap.read()
 
@@ -168,8 +149,8 @@ while True:
     # lower_blue = np.array([hue_s,sat_thres,val_thres])
     # upper_blue = np.array([hue_e,355,355])
 
-    lower_blue = np.array([90,50,50])
-    upper_blue = np.array([120,355,355])
+    lower_blue = array([90,50,50])
+    upper_blue = array([120,355,355])
 
     roimain = frame #defaultroi
 
@@ -186,7 +167,6 @@ while True:
     namedWindow(winname)  
     moveWindow(winname, 200,300)
     imshow(winname,frame)
-    r2(url)
     # cv2.imshow('roimain',roimain)
     # cv2.imshow('edges',edges)
 
